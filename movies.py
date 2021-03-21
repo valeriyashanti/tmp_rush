@@ -51,7 +51,7 @@ class CsvParser:
             if len(row_dict) != self.count_features:
                 raise InvalidCsv
             result_data.append(row_dict)
-        self.csv_data = self.open_csv()
+        self.csv_data = result_data
         return self.csv_data
 
 
@@ -94,7 +94,7 @@ class Movies(CsvParser):
 
     @staticmethod
     def _get_film_genre(film_info: dict):
-        if film_info['genre'] == '(no genres listed)':
+        if film_info['genres'] == '(no genres listed)':
             return []
         return film_info['genres'].split('|')
 
@@ -105,6 +105,6 @@ class Movies(CsvParser):
         """
         movies = Counter()
         for film_info in self.read_csv():
-            film_name = re.sub(r'\(\d{4}\)$', '', film_info['title'].strip())
+            film_name = re.sub(r'\(\d{4}\)$', '', film_info['title']).strip()
             movies[film_name] = len(self._get_film_genre(film_info))
         return dict(movies.most_common()[:n])
