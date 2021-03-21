@@ -161,14 +161,14 @@ class Ratings(CsvParser):
                     float(film_info['rating']))
             return top_movies
 
-        def top_controversial(self, n):
-            return super().top_controversial(n)
-
-        def dict_by_ratings(self, metric):
-            return super().top_by_ratings(-1, metric)
-
         def dist_by_rating(self):
             ratings_distribution = Counter()
             for film_info in self.rating.read_csv():
                 ratings_distribution[film_info['userId']] += 1
             return dict(ratings_distribution.most_common()[::-1])
+
+        def dict_by_ratings(self, metric):
+            return super().top_by_ratings(-1, metric)
+
+        def top_controversial(self, n):
+            return super().top_controversial(n)
