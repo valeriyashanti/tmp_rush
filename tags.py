@@ -16,10 +16,11 @@ class Tags(CsvParser):
     def is_valid_file(self):
         return set(self.columns) == set('userId,movieId,tag,timestamp'.split(','))
 
-    def read_file(self):
+    def read_csv(self):
         for tags in super(Tags, self).read_csv():
             if not self.is_valid_file():
                 raise TypeError
+            tags['tag'] = tags['tag'].lower()
             yield tags
 
     def most_words(self, n):
@@ -51,6 +52,7 @@ class Tags(CsvParser):
         top-n longest tags in terms of the number of characters.
         Drop the duplicates. It is a list of the tags.
         """
+        big_tags = list(set(self.most_words(n)) & set(self.longest(n)))
         return big_tags
 
     def most_popular(self, n):
@@ -74,9 +76,9 @@ class Tags(CsvParser):
         tags_with = set()
         for tags in self.read_csv():
             tag_list = tags['tag']
-            if self.contains_tag(str(tag_list).lower(), word):
+            if self.contains_tag(str(tag_list), word):
                 tags_with.add(str(tag_list))
-        return sorted(tags_with, key=str.lower)
+        return sorted(tags_with)
 
     @staticmethod
     def _get_tags(tags: dict):
@@ -88,4 +90,3 @@ class Tags(CsvParser):
             if tag == word:
                 return True
         return False
-

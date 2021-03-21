@@ -63,6 +63,5 @@ class Movies(CsvParser):
         """
         movies = Counter()
         for film_info in self.read_csv():
-            # movies[film_info['film_name']] = len(self._get_film_genre(film_info))
             movies[film_info['title']] = len(self._get_film_genre(film_info))
         return dict(movies.most_common()[:n])
