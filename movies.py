@@ -1,58 +1,6 @@
 import re
 from collections import Counter
-
-
-class InvalidCsv(Exception):
-    pass
-
-
-class CsvParser:
-    def __init__(self, filename, sep=',', header=True):
-        self.filename = filename
-        self.sep = sep
-        self.header = header
-        self.columns = []
-        self.count_features = None
-        self.csv_data = None
-
-    def open_csv(self):
-        with open(self.filename) as fd:
-            if self.header:
-                self.columns = next(fd).strip('\n').split(',')
-                self.count_features = len(self.columns)
-            else:
-                self.columns = range(int(1e6))
-            for row in fd:
-                yield row.strip()
-
-    def read_csv(self):
-        result_data = []
-        if self.csv_data is not None:
-            return self.csv_data
-        for row in self.open_csv():
-            row_dict = {}
-            flag = False
-            column_idx = 0
-            for obj in row.strip('\n').split(self.sep):
-                try:
-                    row_dict[self.columns[column_idx]] = obj.strip('"')
-                except IndexError:
-                    raise InvalidCsv
-
-                if obj.count('"') == 1:
-                    flag = not flag
-
-                if flag:
-                    row_dict[self.columns[column_idx]] += self.sep
-                else:
-                    column_idx += 1
-            if self.count_features is None:
-                self.count_features = len(row_dict)
-            if len(row_dict) != self.count_features:
-                raise InvalidCsv
-            result_data.append(row_dict)
-        self.csv_data = result_data
-        return self.csv_data
+from movielens_analysis import CsvParser
 
 
 class Movies(CsvParser):
@@ -65,6 +13,16 @@ class Movies(CsvParser):
         Put here any fields that you think you will need.
         """
         super().__init__(path_to_the_file)
+
+    def is_valid_file(self):
+        return set(self.columns) == set('movieId,title,genres'.split(','))
+
+    def read_csv(self):
+        for film_info in super(Movies, self).read_csv():
+            if not self.is_valid_file():
+                raise TypeError
+            # film_info['film_name'] = re.sub(r'\(\d{4}\)$', '', film_info['title']).strip('"\n ')
+            yield film_info
 
     def dist_by_release(self):
         """
@@ -105,6 +63,6 @@ class Movies(CsvParser):
         """
         movies = Counter()
         for film_info in self.read_csv():
-            film_name = re.sub(r'\(\d{4}\)$', '', film_info['title']).strip()
-            movies[film_name] = len(self._get_film_genre(film_info))
+            # movies[film_info['film_name']] = len(self._get_film_genre(film_info))
+            movies[film_info['title']] = len(self._get_film_genre(film_info))
         return dict(movies.most_common()[:n])
